@@ -1,6 +1,7 @@
 package com.hehaoran.hblog.web.demos.web;
 
 import com.hehaoran.hblog.common.aspect.ApiOperationLog;
+import com.hehaoran.hblog.common.utils.JsonUtil;
 import com.hehaoran.hblog.common.utils.Response;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.stream.Collectors;
 
 /**
@@ -57,6 +61,21 @@ public class TestController {
     public Response<String> test2(@RequestBody User user) {
         return Response.success();
     }
+    @PostMapping("/test3")
+    @ApiOperationLog(description = "测试接口jackson")
+    @ApiOperation(value = "测试接口jackson")
+    public Response test3(@RequestBody @Validated User user) {
+        // 打印入参
+        log.info(JsonUtil.toJsonString(user));
+
+        // 设置三种日期字段值
+        user.setCreateTime(LocalDateTime.now());
+        user.setUpdateDate(LocalDate.now());
+        user.setTime(LocalTime.now());
+
+        return Response.success(user);
+    }
+
 
 
 }

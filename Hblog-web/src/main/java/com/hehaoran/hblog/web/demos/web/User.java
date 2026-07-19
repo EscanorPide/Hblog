@@ -16,11 +16,17 @@
 
 package com.hehaoran.hblog.web.demos.web;
 
+import lombok.Data;
+
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
+@Data
 public class User {
     @NotBlank(message = "用户名不许为空")
     private String username;
@@ -28,23 +34,12 @@ public class User {
     @Max(100)
     @NotNull(message = "年龄不许为空")
     private Integer age;
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public Integer getAge() {
-        return age;
-    }
-
-    public void setAge(Integer age) {
-        this.age = age;
-    }
-
+    // 创建时间
+    private LocalDateTime createTime;
+    // 更新日期
+    private LocalDate updateDate;
+    // 时间
+    private LocalTime time;
     @Override
     public String toString() {
         return "User{username='" + username + "', age=" + age + "}";
