@@ -1,0 +1,15 @@
+2026-07-17 15:52:46.800 [main] INFO  com.hehaoran.hblog.web.HblogWebApplication - Starting HblogWebApplication using Java 17.0.14 on CHINAMI-D12QFPN with PID 60880 (E:\Hblog\Hblog-web\target\classes started by Administrator in E:\Hblog)
+2026-07-17 15:52:46.802 [main] INFO  com.hehaoran.hblog.web.HblogWebApplication - The following profiles are active: dev
+2026-07-17 15:52:47.359 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat initialized with port(s): 8080 (http)
+2026-07-17 15:52:47.368 [main] INFO  org.apache.catalina.core.StandardService - Starting service [Tomcat]
+2026-07-17 15:52:47.368 [main] INFO  org.apache.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/9.0.56]
+2026-07-17 15:52:47.411 [main] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-07-17 15:52:47.416 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 584 ms
+2026-07-17 15:52:47.619 [main] INFO  o.s.boot.web.embedded.tomcat.TomcatWebServer - Tomcat started on port(s): 8080 (http) with context path ''
+2026-07-17 15:52:47.625 [main] INFO  com.hehaoran.hblog.web.HblogWebApplication - Started HblogWebApplication in 1.122 seconds (JVM running for 1.572)
+2026-07-17 15:53:07.151 [http-nio-8080-exec-2] INFO  o.a.c.core.ContainerBase.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-07-17 15:53:07.151 [http-nio-8080-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-07-17 15:53:07.152 [http-nio-8080-exec-2] INFO  org.springframework.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-07-17 15:53:07.217 [http-nio-8080-exec-2] INFO  c.h.hblog.common.aspect.ApiOperationLogAspect - ====== 请求开始: [测试案例], 入参: {"username":"admin","age":18}, 请求类: TestController, 请求方法: test =================================== 
+2026-07-17 15:53:07.224 [http-nio-8080-exec-2] INFO  com.hehaoran.hblog.web.demos.web.TestController - 收到请求: User{username='admin', age=18}
+2026-07-17 15:53:07.224 [http-nio-8080-exec-2] INFO  c.h.hblog.common.aspect.ApiOperationLogAspect - ====== 请求结束: [测试案例], 耗时: 16ms, 出参: "User{username='admin', age=18}" =================================== 
