@@ -12,7 +12,9 @@
     "prepare": "cd .. && node Hblog-vue3/node_modules/husky/bin.js Hblog-vue3/.husky"
   },
   "dependencies": {
-    "vue": "^3.5.38"
+    "pinia": "^4.0.2",
+    "vue": "^3.5.38",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
