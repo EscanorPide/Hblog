@@ -1,0 +1,2 @@
+cd Hblog-vue3 || exit 1
+npx --no -- commitlint --edit "$1"
