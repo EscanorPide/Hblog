@@ -3,6 +3,8 @@ import Login from '@/pages/admin/login.vue'
 import AdminLayout from '@/pages/admin/AdminLayout.vue'
 import AdminIndex from '@/pages/admin/index.vue'
 import AdminArticles from '@/pages/admin/articles.vue'
+import AdminCategories from '@/pages/admin/categories.vue'
+import AdminTags from '@/pages/admin/tags.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 // 统一在这里声明所有路由
@@ -41,6 +43,22 @@ const routes = [
         component: AdminArticles,
         meta: {
           title: '文章管理',
+        },
+      },
+      {
+        path: 'categories',
+        name: 'AdminCategories',
+        component: AdminCategories,
+        meta: {
+          title: '分类管理',
+        },
+      },
+      {
+        path: 'tags',
+        name: 'AdminTags',
+        component: AdminTags,
+        meta: {
+          title: '标签管理',
         },
       },
     ],
