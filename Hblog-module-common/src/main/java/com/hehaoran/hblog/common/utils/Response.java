@@ -1,5 +1,6 @@
 package com.hehaoran.hblog.common.utils;
 
+import com.hehaoran.hblog.common.enums.ResponseCodeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -53,6 +54,14 @@ public class Response<T> implements Serializable {
         response.setSuccess(false);
         response.setErrorCode(errorCode);
         response.setMessage(errorMessage);
+        return response;
+    }
+
+    public static <T> Response<T> fail(ResponseCodeEnum responseCodeEnum) {
+        Response<T> response = new Response<>();
+        response.setSuccess(false);
+        response.setErrorCode(responseCodeEnum.getErrorCode());
+        response.setMessage(responseCodeEnum.getErrorMessage());
         return response;
     }
 }

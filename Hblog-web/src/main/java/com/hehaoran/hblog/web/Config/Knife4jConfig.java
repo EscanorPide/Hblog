@@ -1,4 +1,4 @@
-package com.hehaoran.hblog.web.Config;
+package com.hehaoran.hblog.web.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -6,44 +6,44 @@ import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
-import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2WebMvc;
 
 /**
- * @author:
- * @url:
- * @date: 2026/7/19
- * @description:
- **/
+ * Knife4j / Swagger 统一配置（所有接口文档分组都放这里）
+ */
 @Configuration
 @EnableSwagger2WebMvc
 public class Knife4jConfig {
 
     @Bean("webApi")
-    public Docket createApiDoc() {
-        Docket docket = new Docket(DocumentationType.SWAGGER_2)
-                .apiInfo(buildApiInfo())
-                // 分组名称
+    public Docket webApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo("Hblog 博客前台接口文档", "前台展示相关接口"))
                 .groupName("Web 前台接口")
                 .select()
-                // 这里指定 Controller 扫描包路径
                 .apis(RequestHandlerSelectors.basePackage("com.hehaoran.hblog.web"))
                 .paths(PathSelectors.any())
                 .build();
-        return docket;
     }
 
-    /**
-     * 构建 API 信息
-     * @return
-     */
-    private ApiInfo buildApiInfo() {
+    @Bean("adminApi")
+    public Docket adminApi() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .apiInfo(apiInfo("Hblog 博客后台接口文档", "Admin 管理端接口"))
+                .groupName("Admin 管理接口")
+                .select()
+                .apis(RequestHandlerSelectors.basePackage("com.hehaoran.hblog.admin.controller"))
+                .paths(PathSelectors.any())
+                .build();
+    }
+
+    private ApiInfo apiInfo(String title, String description) {
         return new ApiInfoBuilder()
-                .title("Hblog 博客前台接口文档") // 标题
-                .description("Hblog 是一款由 Spring Boot + Vue 3.2 + Vite 4.3 开发的前后端分离博客。") // 描述
-                .version("1.0") // 版本号
+                .title(title)
+                .description(description)
+                .version("1.0")
                 .build();
     }
 }

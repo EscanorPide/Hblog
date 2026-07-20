@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @Api(tags = "首页模块")
 public class TestController {
 
-    @PostMapping("/test")
+    @PostMapping("/admin/test")
     @ApiOperationLog(description = "测试案例")
     public String test(@RequestBody User user) {
         log.info("收到请求: {}", user);
@@ -75,7 +75,4 @@ public class TestController {
 
         return Response.success(user);
     }
-
-
-
 }

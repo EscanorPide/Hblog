@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    url: jdbc:p6spy:mysql://localhost:3306/blog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
-    username: root
-    password: 12345678
+    url: jdbc:p6spy:mysql://124.222.230.228:3306/hblog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    username: hehaoran
+    password: 15668492912
     hikari:
       minimum-idle: 5
       maximum-pool-size: 20
