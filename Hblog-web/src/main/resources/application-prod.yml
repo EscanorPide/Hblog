@@ -28,3 +28,13 @@ jwt:
 
 logging:
   config: classpath:logback-Hblog.xml
+
+# ==================== RustFS（S3 兼容对象存储） ====================
+rustfs:
+  endpoint: http://你的服务器IP:9000
+  access-key: 你的AccessKey
+  secret-key: 你的SecretKey
+  bucket-name: hblog
+  region: us-east-1
+  path-style-access: true
+  url-prefix: http://你的服务器IP:9000/hblog

@@ -2,4 +2,10 @@ spring:
   profiles:
     # 默认激活 dev 环境
     active: dev
+  servlet:
+    multipart:
+      # 单个文件最大大小（默认 1MB，博客图片建议放宽）
+      max-file-size: 10MB
+      # 单次请求最大大小（可含多个文件）
+      max-request-size: 20MB
 

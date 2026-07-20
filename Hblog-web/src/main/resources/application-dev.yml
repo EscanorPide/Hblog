@@ -28,3 +28,19 @@ jwt:
 
 logging:
   config: classpath:logback-Hblog.xml
+
+# ==================== RustFS（S3 兼容对象存储） ====================
+# 说明：RustFS 没有专用 Java SDK，通过 AWS S3 SDK 对接
+rustfs:
+  # RustFS 服务地址（控制台/API 地址，不要末尾斜杠）
+  endpoint: http://124.222.230.228:9000
+  # Access Key / Secret Key：在 RustFS 控制台创建
+  access-key: rustfsadmin
+  secret-key: rustfsadmin
+  # 桶名称：先在控制台建好（只能小写字母、数字、连字符）
+  bucket-name: hblog
+  # Region：RustFS 不校验，但 SDK 必填，随便填一个即可
+  region: us-east-1
+  # 必须为 true（path-style），否则上传常会失败
+  path-style-access: true
+  url-prefix: http://124.222.230.228:9000/hblog
