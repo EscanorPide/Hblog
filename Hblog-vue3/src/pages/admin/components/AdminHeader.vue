@@ -38,6 +38,10 @@
               <el-icon><House /></el-icon>
               后台首页
             </el-dropdown-item>
+            <el-dropdown-item command="profile">
+              <el-icon><Lock /></el-icon>
+              修改密码
+            </el-dropdown-item>
             <el-dropdown-item command="logout" divided>
               <el-icon><SwitchButton /></el-icon>
               退出登录
@@ -47,6 +51,8 @@
       </el-dropdown>
     </div>
   </header>
+
+  <AdminUpdatePassword v-model="passwordDialogVisible" />
 </template>
 
 <script setup>
@@ -56,13 +62,15 @@ import {
   Expand,
   Fold,
   House,
+  Lock,
   SwitchButton,
   View,
 } from '@element-plus/icons-vue'
-import { computed } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { showMessage } from '@/composables/util'
+import { showMessage, showModel } from '@/composables/util'
 import { useUserStore } from '@/stores/user'
+import AdminUpdatePassword from './AdminUpdatePassword.vue'
 
 defineProps({
   collapsed: {
@@ -76,6 +84,7 @@ defineEmits(['toggle-menu'])
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const passwordDialogVisible = ref(false)
 const currentTitle = computed(() => route.meta.title || '后台首页')
 const displayName = computed(() => userStore.userInfo?.username || '管理员')
 const avatarLetter = computed(() => displayName.value.charAt(0).toUpperCase())
@@ -86,10 +95,22 @@ function handleCommand(command) {
     return
   }
 
+  // 下拉菜单关闭后再打开对话框，避免被 dropdown 遮挡/打断
+  if (command === 'profile') {
+    nextTick(() => {
+      passwordDialogVisible.value = true
+    })
+    return
+  }
+
   if (command === 'logout') {
-    userStore.logout()
-    showMessage('已退出登录')
-    router.replace('/login')
+    showModel('确认退出登录吗？', 'warning', '退出登录')
+      .then(() => {
+        userStore.logout()
+        showMessage('已退出登录')
+        router.replace('/login')
+      })
+      .catch(() => {})
   }
 }
 </script>
@@ -131,7 +152,9 @@ function handleCommand(command) {
   color: #4b5563;
   background: transparent;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
 
 .collapse-button:hover {
