@@ -1,29 +1,53 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-html,
-body,
-#app {
-  margin: 0;
-  min-height: 100%;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 body {
-  font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  color: #1a1a1a;
-  background: #f7f7f5;
-  line-height: 1.6;
+    font-family: -apple-system-font,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Hiragino Sans GB,Microsoft YaHei UI,Microsoft YaHei,Arial,sans-serif;
+    color: #4c4e4d;
+    font-size: 16px;
+    background: #f4f4f4;
+    line-height: 1.6;
+  }
+  [type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus {
+    box-shadow: 0 0 0 1px transparent inset!important;
+  }
+
+/* ========== 全局路由过渡 ========== */
+/* 顶层页面：淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.22s ease;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
-img {
-  max-width: 100%;
-  display: block;
+/* 后台内容区：淡入 + 轻微上移 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-enter-active,
+  .fade-leave-active,
+  .fade-slide-enter-active,
+  .fade-slide-leave-active {
+    transition: none;
+  }
 }

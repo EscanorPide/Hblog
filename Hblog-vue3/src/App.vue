@@ -1,11 +1,7 @@
 <template>
-   <router-view></router-view>
+  <router-view v-slot="{ Component, route }">
+    <transition name="fade" mode="out-in">
+      <component :is="Component" :key="route.matched[0]?.path || route.path" />
+    </transition>
+  </router-view>
 </template>
-
-<script setup>
- 
-</script>
-
-<style scoped>
-
-</style>
