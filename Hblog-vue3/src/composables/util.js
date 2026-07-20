@@ -1,4 +1,4 @@
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 /**
  * 全局消息提示封装
@@ -12,5 +12,19 @@ export function showMessage(message = '提示内容', type = 'success', plain = 
     type,
     plain,
     duration: 3000,
+  })
+}
+
+/**
+ * 弹出确认框
+ * @param {string} content 提示内容
+ * @param {'success' | 'warning' | 'info' | 'error'} type 图标类型
+ * @param {string} title 标题
+ */
+export function showModel(content = '提示内容', type = 'warning', title = '') {
+  return ElMessageBox.confirm(content, title, {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type,
   })
 }

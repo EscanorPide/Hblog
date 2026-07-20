@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { getUserInfo } from '@/api/admin/user'
 import { removeToken } from '@/composables/auth'
+import { useTagsView } from '@/composables/tagsView'
 
 export const useUserStore = defineStore(
   'user',
@@ -22,10 +23,14 @@ export const useUserStore = defineStore(
         })
     }
 
-    // 退出登录
+    // 退出登录：清除 token、用户信息持久化缓存、标签页缓存
     function logout() {
       removeToken()
       userInfo.value = {}
+      // 清除 pinia 持久化缓存
+      localStorage.removeItem('user')
+      // 重置标签页
+      useTagsView().resetToAffixed()
     }
 
     return { userInfo, setUserInfo, logout }

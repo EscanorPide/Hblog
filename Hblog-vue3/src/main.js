@@ -1,6 +1,8 @@
 import '@/assets/styles/main.css'
-// Element Plus 消息提示样式（函数式调用不会自动按需引入样式）
+// Element Plus 消息提示 / 确认框样式（函数式调用不会自动按需引入样式）
 import 'element-plus/es/components/message/style/css'
+import 'element-plus/es/components/message-box/style/css'
+import 'element-plus/es/components/dialog/style/css'
 
 import { createApp } from 'vue'
 import App from '@/App.vue'
