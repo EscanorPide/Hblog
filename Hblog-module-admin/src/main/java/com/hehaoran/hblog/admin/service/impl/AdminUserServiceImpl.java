@@ -1,7 +1,7 @@
 package com.hehaoran.hblog.admin.service.impl;
 
-import com.hehaoran.hblog.admin.model.vo.FindUserInfoRspVO;
-import com.hehaoran.hblog.admin.model.vo.UpdateAdminUserPasswordReqVO;
+import com.hehaoran.hblog.admin.model.vo.user.FindUserInfoRspVO;
+import com.hehaoran.hblog.admin.model.vo.user.UpdateAdminUserPasswordReqVO;
 import com.hehaoran.hblog.admin.service.AdminUserService;
 import com.hehaoran.hblog.common.domain.mapper.UserMapper;
 import com.hehaoran.hblog.common.enums.ResponseCodeEnum;

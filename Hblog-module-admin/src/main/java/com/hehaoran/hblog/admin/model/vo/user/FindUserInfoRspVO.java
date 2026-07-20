@@ -1,4 +1,4 @@
-package com.hehaoran.hblog.admin.model.vo;
+package com.hehaoran.hblog.admin.model.vo.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

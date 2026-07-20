@@ -1,6 +1,6 @@
 package com.hehaoran.hblog.admin.service;
 
-import com.hehaoran.hblog.admin.model.vo.UpdateAdminUserPasswordReqVO;
+import com.hehaoran.hblog.admin.model.vo.user.UpdateAdminUserPasswordReqVO;
 import com.hehaoran.hblog.common.utils.Response;
 
 /**

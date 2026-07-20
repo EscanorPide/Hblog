@@ -1,4 +1,4 @@
-package com.hehaoran.hblog.admin.model.vo;
+package com.hehaoran.hblog.admin.model.vo.user;
 
 
 import io.swagger.annotations.ApiModel;
