@@ -1,6 +1,7 @@
 package com.hehaoran.hblog.common.utils;
 
 import com.hehaoran.hblog.common.enums.ResponseCodeEnum;
+import com.hehaoran.hblog.common.exception.BizException;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -62,6 +63,14 @@ public class Response<T> implements Serializable {
         response.setSuccess(false);
         response.setErrorCode(responseCodeEnum.getErrorCode());
         response.setMessage(responseCodeEnum.getErrorMessage());
+        return response;
+    }
+
+    public static <T> Response<T> fail(BizException bizException) {
+        Response<T> response = new Response<>();
+        response.setSuccess(false);
+        response.setErrorCode(bizException.getErrorCode());
+        response.setMessage(bizException.getErrorMessage());
         return response;
     }
 }
