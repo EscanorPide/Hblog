@@ -31,6 +31,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useTagsView } from '@/composables/tagsView'
+import { useBlogSettingsStore } from '@/stores/blogSettings'
 import { useMenuStore } from '@/stores/menu'
 import { useUserStore } from '@/stores/user'
 import AdminFooter from './components/AdminFooter.vue'
@@ -39,14 +40,16 @@ import AdminMenu from './components/AdminMenu.vue'
 import AdminTagList from './components/AdminTagList.vue'
 
 const menuStore = useMenuStore()
+const blogSettingsStore = useBlogSettingsStore()
 const { cachedNames } = useTagsView()
 const userStore = useUserStore()
 
-// 刷新页面后 Pinia 会丢失，进入后台布局时补拉用户信息
+// 刷新页面后 Pinia 会丢失，进入后台布局时补拉用户信息 / 博客设置
 onMounted(() => {
   if (!userStore.userInfo?.username) {
     userStore.setUserInfo()
   }
+  blogSettingsStore.fetchSettings()
 })
 </script>
 

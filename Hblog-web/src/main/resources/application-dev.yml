@@ -1,7 +1,7 @@
 spring:
   datasource:
-    driver-class-name: com.p6spy.engine.spy.P6SpyDriver
-    url: jdbc:p6spy:mysql://localhost:3306/blog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/blog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&zeroDateTimeBehavior=convertToNull
     username: root
     password: 12345678
     hikari:
@@ -28,6 +28,8 @@ jwt:
 
 logging:
   config: classpath:logback-Hblog.xml
+  level:
+    com.hehaoran.hblog.common.domain.mapper: debug
 
 # ==================== RustFS（S3 兼容对象存储） ====================
 # 说明：RustFS 没有专用 Java SDK，通过 AWS S3 SDK 对接

@@ -9,7 +9,7 @@ router.beforeEach((to, from, next) => {
   const token = getToken()
   if (!token && to.path.startsWith('/admin')) {
     showMessage('请先登录', 'warning')
-    next({ path: '/login' })
+    next({ path: '/login', query: { redirect: to.fullPath } })
   } else if (token && to.path === '/login') {
     // 若用户已经登录，且重复访问登录页
     showMessage('请勿重复登录', 'warning')

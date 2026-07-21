@@ -6,9 +6,19 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+      </profile>
+      <profile name="Annotation profile for Hblog-springboot" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="D:/app/maven/apache-maven-3.8.9/rep/repository/org/projectlombok/lombok/1.18.28/lombok-1.18.28.jar" />
+          <entry name="D:/app/maven/apache-maven-3.8.9/rep/repository/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
+        </processorPath>
+        <module name="Hblog-module-jwt" />
         <module name="Hblog-module-common" />
-        <module name="Hblog-web" />
         <module name="Hblog-module-admin" />
+        <module name="Hblog-web" />
       </profile>
     </annotationProcessing>
   </component>
@@ -16,6 +26,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="Hblog-module-admin" options="-parameters" />
       <module name="Hblog-module-common" options="-parameters" />
+      <module name="Hblog-module-jwt" options="-parameters" />
       <module name="Hblog-web" options="-parameters" />
     </option>
   </component>

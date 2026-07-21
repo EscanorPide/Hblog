@@ -14,7 +14,7 @@
       </button>
 
       <div class="breadcrumb">
-        <span>Hblog</span>
+        <span>{{ blogName }}</span>
         <el-icon><ArrowRight /></el-icon>
         <strong>{{ currentTitle }}</strong>
       </div>
@@ -28,7 +28,8 @@
 
       <el-dropdown trigger="click" @command="handleCommand">
         <button class="user-button" type="button">
-          <span class="avatar">{{ avatarLetter }}</span>
+          <img v-if="avatarUrl" :src="avatarUrl" class="avatar avatar-img" alt="头像" />
+          <span v-else class="avatar">{{ avatarLetter }}</span>
           <span class="user-name">{{ displayName }}</span>
           <el-icon><ArrowDown /></el-icon>
         </button>
@@ -69,6 +70,7 @@ import {
 import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { showMessage, showModel } from '@/composables/util'
+import { useBlogSettingsStore } from '@/stores/blogSettings'
 import { useUserStore } from '@/stores/user'
 import AdminUpdatePassword from './AdminUpdatePassword.vue'
 
@@ -84,9 +86,14 @@ defineEmits(['toggle-menu'])
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+const blogSettingsStore = useBlogSettingsStore()
 const passwordDialogVisible = ref(false)
 const currentTitle = computed(() => route.meta.title || '后台首页')
-const displayName = computed(() => userStore.userInfo?.username || '管理员')
+const blogName = computed(() => blogSettingsStore.settings?.name || 'Hblog')
+const displayName = computed(
+  () => blogSettingsStore.settings?.author || userStore.userInfo?.username || '管理员',
+)
+const avatarUrl = computed(() => blogSettingsStore.settings?.avatar || '')
 const avatarLetter = computed(() => displayName.value.charAt(0).toUpperCase())
 
 function handleCommand(command) {
@@ -216,6 +223,12 @@ function handleCommand(command) {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   font-weight: 700;
   box-shadow: 0 6px 14px rgba(99, 102, 241, 0.25);
+}
+
+.avatar-img {
+  display: block;
+  object-fit: cover;
+  background: #fff;
 }
 
 .user-name {

@@ -1,20 +1,54 @@
+import FrontendLayout from '@/pages/frontend/FrontendLayout.vue'
 import Index from '@/pages/frontend/index.vue'
+import ArticleDetail from '@/pages/frontend/article-detail.vue'
+import CategoryList from '@/pages/frontend/category-list.vue'
+import TagList from '@/pages/frontend/tag-list.vue'
+import Archive from '@/pages/frontend/archive.vue'
 import Login from '@/pages/admin/login.vue'
 import AdminLayout from '@/pages/admin/AdminLayout.vue'
 import AdminIndex from '@/pages/admin/index.vue'
 import AdminArticles from '@/pages/admin/articles.vue'
 import AdminCategories from '@/pages/admin/categories.vue'
 import AdminTags from '@/pages/admin/tags.vue'
+import AdminSettings from '@/pages/admin/settings.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
-// 统一在这里声明所有路由
 const routes = [
   {
     path: '/',
-    component: Index,
-    meta: {
-      title: 'Weblog 首页',
-    },
+    component: FrontendLayout,
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: Index,
+        meta: { title: '首页' },
+      },
+      {
+        path: 'article/:id',
+        name: 'ArticleDetail',
+        component: ArticleDetail,
+        meta: { title: '文章详情' },
+      },
+      {
+        path: 'category/:id?',
+        name: 'CategoryList',
+        component: CategoryList,
+        meta: { title: '分类' },
+      },
+      {
+        path: 'tag/:id?',
+        name: 'TagList',
+        component: TagList,
+        meta: { title: '标签' },
+      },
+      {
+        path: 'archive',
+        name: 'Archive',
+        component: Archive,
+        meta: { title: '归档' },
+      },
+    ],
   },
   {
     path: '/login',
@@ -61,17 +95,24 @@ const routes = [
           title: '标签管理',
         },
       },
+      {
+        path: 'settings',
+        name: 'AdminSettings',
+        component: AdminSettings,
+        meta: {
+          title: '系统设置',
+        },
+      },
     ],
   },
 ]
 
-// 创建路由
 const router = createRouter({
-  // 指定路由的历史管理方式，hash 模式指的是 URL 的路径是通过 hash 符号（#）进行标识
   history: createWebHashHistory(),
-  // routes: routes 的缩写
   routes,
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
-// ES6 模块导出语句，它用于将 router 对象导出，以便其他文件可以导入和使用这个对象
 export default router

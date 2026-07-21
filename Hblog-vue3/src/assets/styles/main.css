@@ -3,15 +3,68 @@
 @tailwind utilities;
 
 body {
-    font-family: -apple-system-font,BlinkMacSystemFont,Helvetica Neue,PingFang SC,Hiragino Sans GB,Microsoft YaHei UI,Microsoft YaHei,Arial,sans-serif;
-    color: #4c4e4d;
-    font-size: 16px;
-    background: #f4f4f4;
-    line-height: 1.6;
-  }
-  [type='text']:focus, [type='email']:focus, [type='url']:focus, [type='password']:focus, [type='number']:focus, [type='date']:focus, [type='datetime-local']:focus, [type='month']:focus, [type='search']:focus, [type='tel']:focus, [type='time']:focus, [type='week']:focus, [multiple]:focus, textarea:focus, select:focus {
-    box-shadow: 0 0 0 1px transparent inset!important;
-  }
+  font-family: -apple-system-font, BlinkMacSystemFont, Helvetica Neue, PingFang SC, Hiragino Sans GB,
+    Microsoft YaHei UI, Microsoft YaHei, Arial, sans-serif;
+  color: #4c4e4d;
+  font-size: 16px;
+  background: #f4f4f4;
+  line-height: 1.6;
+}
+
+/* 仅清除原生控件的 focus 描边，避开 Element Plus（其边框依赖 box-shadow） */
+input:not(.el-input__inner):focus,
+select:not([class*='el-']):focus,
+textarea:not(.el-textarea__inner):focus {
+  box-shadow: none;
+  outline: none;
+}
+
+/*
+ * 抵消 Flowbite/Tailwind forms 对 Element Plus 的污染：
+ * [type=text] 等规则会给 .el-input__inner 再画一层边框，出现双层「框框」
+ * 注意：el-input 边框在 wrapper 上；el-textarea 边框在自身 box-shadow 上，不能一起清掉
+ */
+.el-input__inner,
+.el-select__input {
+  appearance: none;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  line-height: inherit !important;
+  --tw-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+}
+
+.el-input__inner:focus,
+.el-select__input:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+}
+
+.el-textarea__inner {
+  appearance: none;
+  border-width: 0 !important;
+  border-color: transparent !important;
+  border-radius: var(--el-input-border-radius, var(--el-border-radius-base)) !important;
+  --tw-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-ring-offset-shadow: 0 0 #0000;
+  box-shadow: 0 0 0 1px var(--el-input-border-color, var(--el-border-color)) inset !important;
+}
+
+.el-textarea__inner:focus {
+  outline: none !important;
+  border-color: transparent !important;
+  --tw-ring-shadow: 0 0 #0000 !important;
+  --tw-ring-offset-shadow: 0 0 #0000 !important;
+  box-shadow: 0 0 0 1px var(--el-input-focus-border-color, var(--el-color-primary)) inset !important;
+}
 
 /* ========== 全局路由过渡 ========== */
 /* 顶层页面：淡入淡出 */

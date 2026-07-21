@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @MapperScan("com.hehaoran.hblog.common.domain.mapper")
 public class MybatisPlusConfig {
-    // 类主体内容
     /**
      * 分页插件
      * @return
@@ -25,6 +24,13 @@ public class MybatisPlusConfig {
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
         interceptor.addInnerInterceptor(new PaginationInnerInterceptor());
         return interceptor;
+    }
+    /**
+     * 自定义批量插入 SQL 注入器
+     */
+    @Bean
+    public InsertBatchSqlInjector insertBatchSqlInjector() {
+        return new InsertBatchSqlInjector();
     }
 
 }

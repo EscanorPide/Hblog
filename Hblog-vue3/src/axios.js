@@ -1,12 +1,53 @@
 import axios from 'axios'
-import { getToken } from '@/composables/auth'
+import { getToken, removeToken } from '@/composables/auth'
 import { showMessage } from '@/composables/util'
+import router from '@/router'
 
 // 创建 Axios 实例
 const instance = axios.create({
   baseURL: '/api', // 你的 API 基础 URL
   timeout: 7000, // 请求超时时间
 })
+
+/** 未授权业务码（与后端 ResponseCodeEnum.UNAUTHORIZED 对齐） */
+const UNAUTHORIZED_CODE = '20002'
+
+/** 避免并发 401 重复弹窗 / 跳转 */
+let forcingLogout = false
+
+function forceLogoutToLogin(message = '登录已过期，请重新登录') {
+  if (forcingLogout) return
+  forcingLogout = true
+
+  removeToken()
+
+  // 动态引入，避免 axios ↔ store ↔ api 循环依赖
+  import('@/stores/user')
+    .then(({ useUserStore }) => {
+      useUserStore().logout()
+    })
+    .catch(() => {})
+
+  showMessage(message, 'warning')
+
+  const current = router.currentRoute.value
+  if (current.path !== '/login') {
+    router
+      .replace({
+        path: '/login',
+        query: { redirect: current.fullPath },
+      })
+      .finally(() => {
+        forcingLogout = false
+      })
+  } else {
+    forcingLogout = false
+  }
+}
+
+function isUnauthorizedPayload(data) {
+  return data?.errorCode === UNAUTHORIZED_CODE
+}
 
 // 添加请求拦截器
 instance.interceptors.request.use(
@@ -19,7 +60,6 @@ instance.interceptors.request.use(
     return config
   },
   function (error) {
-    // 对请求错误做些什么
     return Promise.reject(error)
   },
 )
@@ -27,14 +67,27 @@ instance.interceptors.request.use(
 // 添加响应拦截器
 instance.interceptors.response.use(
   function (response) {
-    // 2xx 范围内的状态码都会触发该函数。
-    // 对响应数据做点什么
-    return response.data
+    const data = response.data
+
+    // 少数接口可能 HTTP 200 但业务码表示未登录
+    if (isUnauthorizedPayload(data)) {
+      forceLogoutToLogin(data.message || '无访问权限，请先登录！')
+      return Promise.reject(data)
+    }
+
+    return data
   },
   function (error) {
-    // 超出 2xx 范围的状态码都会触发该函数。
-    // 对响应错误做点什么
-    const errorMsg = error.response?.data?.message || '请求失败'
+    const status = error.response?.status
+    const data = error.response?.data
+
+    // token 失效 / 未登录：强制退出并跳转登录页
+    if (status === 401 || isUnauthorizedPayload(data)) {
+      forceLogoutToLogin(data?.message || '登录已过期，请重新登录')
+      return Promise.reject(error)
+    }
+
+    const errorMsg = data?.message || '请求失败'
     showMessage(errorMsg, 'error')
     return Promise.reject(error)
   },

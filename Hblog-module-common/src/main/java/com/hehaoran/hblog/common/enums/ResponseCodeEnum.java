@@ -27,7 +27,10 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     TAG_NAME_IS_EXISTED("20006", "该标签已存在，请勿重复添加！"),
     FILE_UPLOAD_FAILED("20007", "文件上传失败！"),
     FILE_SIZE_EXCEEDED("20008", "上传文件过大，单个文件不能超过 10MB！"),
-    FILE_NOT_FOUND("20009", "文件不能为空！");
+    FILE_NOT_FOUND("20009", "文件不能为空！"),
+    CATEGORY_NOT_EXISTED("20010", "提交的分类不存在！"),
+    ARTICLE_NOT_FOUND("20010", "该文章不存在！");
+
 
 
 

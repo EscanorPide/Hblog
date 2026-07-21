@@ -1,8 +1,9 @@
 <template>
   <aside class="admin-menu" :class="{ collapsed }">
-    <router-link class="brand" to="/admin/index" aria-label="Hblog 后台首页">
-      <span class="brand-mark">H</span>
-      <span class="brand-name">Hblog</span>
+    <router-link class="brand" to="/admin/index" :aria-label="`${blogName} 后台首页`">
+      <img v-if="blogLogo" :src="blogLogo" class="brand-logo" :alt="blogName" />
+      <span v-else class="brand-mark">H</span>
+      <span class="brand-name">{{ blogName }}</span>
     </router-link>
 
     <nav class="menu-list" aria-label="后台导航">
@@ -46,8 +47,10 @@ import {
   Setting,
   User,
 } from '@element-plus/icons-vue'
+import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { showMessage } from '@/composables/util'
+import { useBlogSettingsStore } from '@/stores/blogSettings'
 
 defineProps({
   collapsed: {
@@ -58,6 +61,10 @@ defineProps({
 
 const route = useRoute()
 const router = useRouter()
+const blogSettingsStore = useBlogSettingsStore()
+
+const blogLogo = computed(() => blogSettingsStore.settings?.logo || '')
+const blogName = computed(() => blogSettingsStore.settings?.name || 'Hblog')
 
 const menuGroups = [
   {
@@ -136,6 +143,16 @@ function handleMenuClick(item) {
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   font-size: 19px;
   font-weight: 800;
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.28);
+}
+
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 11px;
+  background: #fff;
   box-shadow: 0 8px 20px rgba(99, 102, 241, 0.28);
 }
 
