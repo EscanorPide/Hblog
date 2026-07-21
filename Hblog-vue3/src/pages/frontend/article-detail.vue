@@ -7,12 +7,19 @@ import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import { getArticleDetail } from '@/api/frontend/article'
 import CraftAside from './components/CraftAside.vue'
+import CommentSection from './components/CommentSection.vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const loading = ref(false)
 const article = ref(null)
+
+/** 评论归属路由，与后端 routerUrl 约定一致 */
+const commentRouterUrl = computed(() => {
+  const id = route.params.id
+  return id ? `/article/${id}` : ''
+})
 
 const dateText = computed(() => {
   if (!article.value?.createTime) return ''
@@ -139,6 +146,9 @@ watch(() => route.params.id, fetchDetail)
             {{ tag.name }}
           </RouterLink>
         </div>
+
+        <!-- 评论区 -->
+        <CommentSection v-if="commentRouterUrl" :router-url="commentRouterUrl" />
       </template>
 
       <div v-else-if="!loading" class="detail-empty">文章不存在或已删除</div>
@@ -320,6 +330,12 @@ watch(() => route.params.id, fetchDetail)
 .detail-content :deep(.md-editor-preview pre) {
   border-radius: 10px;
   background: #f4f4f4 !important;
+}
+
+/* 代码块头部默认 sticky + z-index:10000，整页滚动时会吸顶盖住导航栏，这里取消吸顶 */
+.detail-content :deep(.md-editor-preview .md-editor-code .md-editor-code-head) {
+  position: static;
+  z-index: auto;
 }
 
 .detail-content :deep(.md-editor-preview img) {

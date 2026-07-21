@@ -56,6 +56,46 @@ public class AdminTagServiceImpl implements AdminTagService {
         return Response.success();
     }
 
+    /**
+     * 更新标签
+     *
+     * @param updateTagReqVO
+     * @return
+     */
+    @Override
+    public Response updateTag(UpdateTagReqVO updateTagReqVO) {
+        Long tagId = updateTagReqVO.getId();
+        String tagName = updateTagReqVO.getName().trim();
+
+        // 校验标签是否存在
+        TagDO tagDO = tagMapper.selectById(tagId);
+        if (Objects.isNull(tagDO)) {
+            log.warn("==> 标签不存在, tagId: {}", tagId);
+            throw new BizException(ResponseCodeEnum.TAG_NOT_EXISTED);
+        }
+
+        // 名称未变化则直接返回
+        if (StringUtils.equals(tagDO.getName(), tagName)) {
+            return Response.success();
+        }
+
+        // 校验新名称是否已被其他标签占用
+        TagDO existTagDO = tagMapper.selectByName(tagName);
+        if (Objects.nonNull(existTagDO) && !Objects.equals(existTagDO.getId(), tagId)) {
+            log.warn("标签名称： {}, 此标签已存在", tagName);
+            throw new BizException(ResponseCodeEnum.TAG_NAME_IS_EXISTED);
+        }
+
+        // 执行更新
+        TagDO updateTagDO = TagDO.builder()
+                .id(tagId)
+                .name(tagName)
+                .build();
+        tagMapper.updateById(updateTagDO);
+
+        return Response.success();
+    }
+
     @Override
     public PageResponse findTagList(FindTagPageListReqVO findTagPageListReqVO) {
         Long current = findTagPageListReqVO.getCurrent();

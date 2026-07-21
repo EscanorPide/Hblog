@@ -63,6 +63,46 @@ public class AdminCategoryServiceImpl implements AdminCategoryService {
         return Response.success();
     }
 
+    /**
+     * 更新分类
+     *
+     * @param updateCategoryReqVO
+     * @return
+     */
+    @Override
+    public Response updateCategory(UpdateCategoryReqVO updateCategoryReqVO) {
+        Long categoryId = updateCategoryReqVO.getId();
+        String categoryName = updateCategoryReqVO.getName().trim();
+
+        // 校验分类是否存在
+        CategoryDO categoryDO = categoryMapper.selectById(categoryId);
+        if (Objects.isNull(categoryDO)) {
+            log.warn("==> 分类不存在, categoryId: {}", categoryId);
+            throw new BizException(ResponseCodeEnum.CATEGORY_NOT_EXISTED);
+        }
+
+        // 名称未变化则直接返回
+        if (StringUtils.equals(categoryDO.getName(), categoryName)) {
+            return Response.success();
+        }
+
+        // 校验新名称是否已被其他分类占用
+        CategoryDO existCategoryDO = categoryMapper.selectByName(categoryName);
+        if (Objects.nonNull(existCategoryDO) && !Objects.equals(existCategoryDO.getId(), categoryId)) {
+            log.warn("分类名称： {}, 此分类已存在", categoryName);
+            throw new BizException(ResponseCodeEnum.CATEGORY_NAME_IS_EXISTED);
+        }
+
+        // 执行更新
+        CategoryDO updateCategoryDO = CategoryDO.builder()
+                .id(categoryId)
+                .name(categoryName)
+                .build();
+        categoryMapper.updateById(updateCategoryDO);
+
+        return Response.success();
+    }
+
     @Override
     public PageResponse findCategoryList(FindCategoryPageListReqVO findCategoryPageListReqVO) {
         // 获取当前页、以及每页需要展示的数据数量

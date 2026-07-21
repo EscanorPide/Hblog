@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -28,6 +29,7 @@ import java.util.Collections;
  **/
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -44,7 +46,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .apply(jwtAuthenticationSecurityConfig) // 设置用户登录认证相关配置
                 .and()
                 .authorizeHttpRequests()
-                .mvcMatchers("/admin/**").authenticated() // 认证所有以 /admin 为前缀的 URL 资源
+                // 任意已登录用户可查自己的信息（前台评论自动填昵称等）
+                .mvcMatchers("/admin/user/info").authenticated()
+                .mvcMatchers("/admin/user/manage/**").hasRole("ADMIN")
+                .mvcMatchers("/admin/**").hasAnyRole("ADMIN", "EDITOR")
                 .anyRequest().permitAll() // 其他都需要放行，无需认证
                 .and()
                 .httpBasic().authenticationEntryPoint(authEntryPoint) // 处理用户未登录访问受保护的资源的情况

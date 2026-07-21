@@ -20,6 +20,9 @@ public class ArticleListRspVO {
 
     private LocalDateTime createTime;
 
+    /** 阅读量 */
+    private Long readNum;
+
     private Long categoryId;
 
     private String categoryName;

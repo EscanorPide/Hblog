@@ -130,7 +130,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import { getBlogSettingsDetail, updateBlogSettings } from '@/api/admin/blogSettings'
-import { uploadFile } from '@/api/admin/file'
+import { resolveUploadUrl, uploadFile } from '@/api/admin/file'
 import { showMessage } from '@/composables/util'
 import { useBlogSettingsStore } from '@/stores/blogSettings'
 
@@ -233,24 +233,43 @@ function handleUpload(options, field) {
   const file = options.file
   if (!file?.type?.startsWith('image/')) {
     showMessage('请上传图片文件', 'warning')
+    options?.onError?.(new Error('invalid file type'))
     return
   }
 
+  // 先本地预览，上传成功后再替换为正式 URL
+  const localUrl = URL.createObjectURL(file)
+  const prevUrl = form[field]
+  form[field] = localUrl
   pageLoading.value = true
+
   uploadFile(file)
     .then((res) => {
       if (res.success === false) {
+        form[field] = prevUrl
         showMessage(res.message || '上传失败', 'error')
+        options?.onError?.(new Error(res.message || 'upload failed'))
         return
       }
-      form[field] = res.data?.url || ''
+      const url = resolveUploadUrl(res)
+      if (!url) {
+        form[field] = prevUrl
+        showMessage('上传成功，但未返回访问地址', 'error')
+        options?.onError?.(new Error('empty upload url'))
+        return
+      }
+      form[field] = url
       formRef.value?.clearValidate(field)
       showMessage('上传成功')
+      options?.onSuccess?.(res)
     })
     .catch((err) => {
+      form[field] = prevUrl
       console.error(err)
+      options?.onError?.(err)
     })
     .finally(() => {
+      URL.revokeObjectURL(localUrl)
       pageLoading.value = false
     })
 }

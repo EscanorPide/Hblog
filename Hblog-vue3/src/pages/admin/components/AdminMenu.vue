@@ -51,6 +51,7 @@ import { computed } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 import { showMessage } from '@/composables/util'
 import { useBlogSettingsStore } from '@/stores/blogSettings'
+import { useUserStore } from '@/stores/user'
 
 defineProps({
   collapsed: {
@@ -62,11 +63,12 @@ defineProps({
 const route = useRoute()
 const router = useRouter()
 const blogSettingsStore = useBlogSettingsStore()
+const userStore = useUserStore()
 
 const blogLogo = computed(() => blogSettingsStore.settings?.logo || '')
 const blogName = computed(() => blogSettingsStore.settings?.name || 'Hblog')
 
-const menuGroups = [
+const rawMenuGroups = [
   {
     title: '工作台',
     items: [
@@ -86,11 +88,22 @@ const menuGroups = [
   {
     title: '系统',
     items: [
-      { label: '用户管理', path: '/admin/users', icon: User },
+      { label: '用户管理', path: '/admin/users', icon: User, roles: ['admin'] },
       { label: '系统设置', path: '/admin/settings', icon: Setting },
     ],
   },
 ]
+
+const menuGroups = computed(() => {
+  return rawMenuGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter(
+        (item) => !item.roles?.length || item.roles.some((role) => userStore.hasRole(role)),
+      ),
+    }))
+    .filter((group) => group.items.length > 0)
+})
 
 function isActive(path) {
   return route.path === path || (path !== '/admin/index' && route.path.startsWith(`${path}/`))

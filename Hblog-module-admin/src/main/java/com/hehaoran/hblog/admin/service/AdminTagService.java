@@ -3,6 +3,7 @@ package com.hehaoran.hblog.admin.service;
 import com.hehaoran.hblog.admin.model.vo.tag.AddTagReqVO;
 import com.hehaoran.hblog.admin.model.vo.tag.DeleteTagReqVO;
 import com.hehaoran.hblog.admin.model.vo.tag.FindTagPageListReqVO;
+import com.hehaoran.hblog.admin.model.vo.tag.UpdateTagReqVO;
 import com.hehaoran.hblog.common.utils.PageResponse;
 import com.hehaoran.hblog.common.utils.Response;
 
@@ -21,6 +22,14 @@ public interface AdminTagService {
      * @return
      */
     Response addTag(AddTagReqVO addTagReqVO);
+
+    /**
+     * 更新标签
+     *
+     * @param updateTagReqVO
+     * @return
+     */
+    Response updateTag(UpdateTagReqVO updateTagReqVO);
 
     /**
      * 标签分页数据查询

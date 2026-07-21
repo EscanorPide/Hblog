@@ -3,6 +3,7 @@ package com.hehaoran.hblog.admin.service;
 import com.hehaoran.hblog.admin.model.vo.category.AddCategoryReqVO;
 import com.hehaoran.hblog.admin.model.vo.category.DeleteCategoryReqVO;
 import com.hehaoran.hblog.admin.model.vo.category.FindCategoryPageListReqVO;
+import com.hehaoran.hblog.admin.model.vo.category.UpdateCategoryReqVO;
 import com.hehaoran.hblog.common.utils.PageResponse;
 import com.hehaoran.hblog.common.utils.Response;
 
@@ -19,6 +20,12 @@ public interface AdminCategoryService {
      * @return
      */
     Response addCategory(AddCategoryReqVO addCategoryReqVO);
+    /**
+     * 更新分类
+     * @param updateCategoryReqVO
+     * @return
+     */
+    Response updateCategory(UpdateCategoryReqVO updateCategoryReqVO);
     /**
      * 分类分页数据查询
      * @param findCategoryPageListReqVO

@@ -2,6 +2,7 @@ package com.hehaoran.hblog.jwt.servcie;
 
 import com.hehaoran.hblog.common.domain.dos.UserDO;
 import com.hehaoran.hblog.common.domain.mapper.UserMapper;
+import com.hehaoran.hblog.common.domain.mapper.UserRoleMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
@@ -11,6 +12,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author:
@@ -24,6 +27,8 @@ public class UserDetailServiceImpl implements UserDetailsService {
 
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private UserRoleMapper userRoleMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -33,9 +38,18 @@ public class UserDetailServiceImpl implements UserDetailsService {
             throw new UsernameNotFoundException("该用户不存在");
         }
 
+        List<String> authorities = userRoleMapper.findRolesByUserId(userDO.getId()).stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(role -> !role.isEmpty())
+                .map(String::toUpperCase)
+                .map(role -> role.startsWith("ROLE_") ? role : "ROLE_" + role)
+                .distinct()
+                .collect(Collectors.toList());
+
         return User.withUsername(userDO.getUsername())
                 .password(userDO.getPassword())
-                .authorities("ADMIN")
+                .authorities(authorities.toArray(new String[0]))
                 .build();
     }
 }

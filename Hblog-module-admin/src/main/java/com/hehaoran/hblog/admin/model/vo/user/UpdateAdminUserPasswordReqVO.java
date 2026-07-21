@@ -17,11 +17,12 @@ import javax.validation.constraints.NotBlank;
 @ApiModel(value = "修改用户密码 VO")
 public class UpdateAdminUserPasswordReqVO {
 
-    @NotBlank(message = "用户名不能为空")
+    @Deprecated
     @ApiModelProperty(value = "用户名")
     private String username;
 
     @NotBlank(message = "密码不能为空")
+    @javax.validation.constraints.Size(min = 8, max = 72, message = "密码长度应为 8-72 个字符")
     @ApiModelProperty(value = "密码")
     private String password;
 }

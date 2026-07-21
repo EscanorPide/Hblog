@@ -3,10 +3,12 @@ package com.hehaoran.hblog.web.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.hehaoran.hblog.common.domain.dos.ArticleCategoryRelDO;
 import com.hehaoran.hblog.common.domain.dos.ArticleDO;
+import com.hehaoran.hblog.common.domain.dos.ArticleTagRelDO;
 import com.hehaoran.hblog.common.domain.dos.CategoryDO;
 import com.hehaoran.hblog.common.domain.dos.TagDO;
 import com.hehaoran.hblog.common.domain.mapper.ArticleCategoryRelMapper;
 import com.hehaoran.hblog.common.domain.mapper.ArticleMapper;
+import com.hehaoran.hblog.common.domain.mapper.ArticleTagRelMapper;
 import com.hehaoran.hblog.common.domain.mapper.CategoryMapper;
 import com.hehaoran.hblog.common.domain.mapper.TagMapper;
 import com.hehaoran.hblog.common.utils.Response;
@@ -33,6 +35,8 @@ public class WebSidebarServiceImpl implements WebSidebarService {
     private TagMapper tagMapper;
     @Resource
     private ArticleCategoryRelMapper articleCategoryRelMapper;
+    @Resource
+    private ArticleTagRelMapper articleTagRelMapper;
     @Resource
     private ArticleMapper articleMapper;
 
@@ -66,10 +70,28 @@ public class WebSidebarServiceImpl implements WebSidebarService {
 
     @Override
     public Response findTagList() {
-        List<TagRspVO> vos = tagMapper.selectList(Wrappers.<TagDO>lambdaQuery()
-                        .eq(TagDO::getIsDeleted, false)
-                        .orderByAsc(TagDO::getCreateTime))
-                .stream().map(tag -> TagRspVO.builder().id(tag.getId()).name(tag.getName()).build())
+        List<TagDO> tags = tagMapper.selectList(Wrappers.<TagDO>lambdaQuery()
+                .eq(TagDO::getIsDeleted, false)
+                .orderByAsc(TagDO::getCreateTime));
+        if (CollectionUtils.isEmpty(tags)) {
+            return Response.success(Collections.emptyList());
+        }
+
+        Set<Long> tagIds = tags.stream().map(TagDO::getId).collect(Collectors.toSet());
+        List<ArticleTagRelDO> tagRels = articleTagRelMapper.selectList(Wrappers.<ArticleTagRelDO>lambdaQuery()
+                .in(ArticleTagRelDO::getTagId, tagIds));
+        Set<Long> articleIds = tagRels.stream().map(ArticleTagRelDO::getArticleId).collect(Collectors.toSet());
+        Set<Long> activeArticleIds = articleIds.isEmpty() ? Collections.emptySet() : articleMapper.selectList(
+                        Wrappers.<ArticleDO>lambdaQuery().in(ArticleDO::getId, articleIds)
+                                .eq(ArticleDO::getIsDeleted, false))
+                .stream().map(ArticleDO::getId).collect(Collectors.toSet());
+        Map<Long, Long> totals = tagRels.stream()
+                .filter(rel -> activeArticleIds.contains(rel.getArticleId()))
+                .collect(Collectors.groupingBy(ArticleTagRelDO::getTagId, Collectors.counting()));
+
+        List<TagRspVO> vos = tags.stream()
+                .map(tag -> TagRspVO.builder().id(tag.getId()).name(tag.getName())
+                        .articlesTotal(totals.getOrDefault(tag.getId(), 0L)).build())
                 .collect(Collectors.toList());
         return Response.success(vos);
     }

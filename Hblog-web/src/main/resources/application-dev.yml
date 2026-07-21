@@ -46,3 +46,9 @@ rustfs:
   # 必须为 true（path-style），否则上传常会失败
   path-style-access: true
   url-prefix: http://124.222.230.228:9000/hblog
+#=================================================================
+# Lucene 全文检索
+#=================================================================
+lucene:
+  indexDir: E:\\java_workspace\\lucene-index # lucene 索引存放的位置
+

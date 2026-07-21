@@ -14,7 +14,6 @@ const { settings } = storeToRefs(useBlogSettingsStore())
 
 const authorName = computed(() => settings.value.author || '作者')
 const authorAvatar = computed(() => settings.value.avatar || '')
-const authorRole = computed(() => settings.value.name || 'Blog')
 </script>
 
 <template>
@@ -31,10 +30,12 @@ const authorRole = computed(() => settings.value.name || 'Blog')
       </div>
 
       <div class="notion-card__body">
-        <p v-if="article.categoryName" class="notion-card__category">
-          {{ article.categoryName }}
-        </p>
-        <h2 class="notion-card__title">{{ article.title }}</h2>
+        <div class="notion-card__heading">
+          <h2 class="notion-card__title">{{ article.title }}</h2>
+          <span v-if="article.categoryName" class="notion-card__category">
+            {{ article.categoryName }}
+          </span>
+        </div>
         <p class="notion-card__summary">
           {{ article.summary || '暂无摘要' }}
         </p>
@@ -51,7 +52,6 @@ const authorRole = computed(() => settings.value.name || 'Blog')
           </span>
           <div class="notion-card__author-meta">
             <span class="notion-card__author-name">{{ authorName }}</span>
-            <span class="notion-card__author-role">{{ authorRole }}</span>
           </div>
         </div>
       </div>
@@ -108,15 +108,27 @@ const authorRole = computed(() => settings.value.name || 'Blog')
   padding-top: 1.1rem;
 }
 
+.notion-card__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .notion-card__category {
-  margin: 0 0 0.45rem;
+  flex-shrink: 0;
+  margin: 0;
   font-size: 0.8rem;
   color: #8a8a8a;
   letter-spacing: 0.01em;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
 .notion-card__title {
   margin: 0;
+  min-width: 0;
+  flex: 1;
   font-size: 1.25rem;
   font-weight: 700;
   line-height: 1.35;
@@ -181,15 +193,5 @@ const authorRole = computed(() => settings.value.name || 'Blog')
   font-size: 0.875rem;
   font-weight: 600;
   color: #0f0f0f;
-}
-
-.notion-card__author-role {
-  margin-top: 0.1rem;
-  font-size: 0.75rem;
-  color: #8a8a8a;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 14rem;
 }
 </style>

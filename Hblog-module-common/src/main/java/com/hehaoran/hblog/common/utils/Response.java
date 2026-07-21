@@ -5,6 +5,7 @@ import com.hehaoran.hblog.common.exception.BizException;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author:
@@ -32,6 +33,18 @@ public class Response<T> implements Serializable {
 
     public static <T> Response<T> success(T data) {
         Response<T> response = new Response<>();
+        response.setData(data);
+        return response;
+    }
+    public static <T> PageResponse<T> success(long total, long current, long size, List<T> data) {
+        PageResponse<T> response = new PageResponse<>();
+        response.setSuccess(true);
+        response.setCurrent(current);
+        response.setSize(size);
+        // 计算总页数
+        int pages = (int) Math.ceil((double) total / size);
+        response.setPages(pages);
+        response.setTotal(total);
         response.setData(data);
         return response;
     }

@@ -41,8 +41,11 @@
       <el-table v-loading="loading" :data="tableData" stripe style="width: 100%">
         <el-table-column prop="name" label="分类名称" min-width="200" />
         <el-table-column prop="createTime" label="创建时间" min-width="200" />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="180" fixed="right">
           <template #default="{ row }">
+            <el-button type="primary" link :icon="Edit" @click="openEditDialog(row)">
+              修改
+            </el-button>
             <el-button type="danger" link :icon="Delete" @click="handleDelete(row)">
               删除
             </el-button>
@@ -86,14 +89,42 @@
         />
       </el-form-item>
     </FormDialog>
+
+    <!-- 修改弹窗 -->
+    <FormDialog
+      ref="editDialogRef"
+      v-model="editDialogVisible"
+      title="修改分类"
+      :form-model="editForm"
+      :rules="addRules"
+      :loading="submitLoading"
+      @confirm="handleEdit"
+      @closed="resetEditForm"
+    >
+      <el-form-item label="分类名称" prop="name">
+        <el-input
+          v-model="editForm.name"
+          placeholder="请输入分类名称（1~10 字）"
+          maxlength="10"
+          show-word-limit
+          clearable
+          @keyup.enter="editDialogRef?.submit()"
+        />
+      </el-form-item>
+    </FormDialog>
   </div>
 </template>
 
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
-import { Delete, Plus, RefreshRight, Search } from '@element-plus/icons-vue'
+import { Delete, Edit, Plus, RefreshRight, Search } from '@element-plus/icons-vue'
 import FormDialog from '@/components/FormDialog.vue'
-import { addCategory, deleteCategory, getCategoryPageList } from '@/api/admin/category'
+import {
+  addCategory,
+  deleteCategory,
+  getCategoryPageList,
+  updateCategory,
+} from '@/api/admin/category'
 import { showMessage, showModel } from '@/composables/util'
 
 defineOptions({ name: 'AdminCategories' })
@@ -102,6 +133,8 @@ const loading = ref(false)
 const submitLoading = ref(false)
 const dialogVisible = ref(false)
 const addDialogRef = ref()
+const editDialogVisible = ref(false)
+const editDialogRef = ref()
 const tableData = ref([])
 
 const filter = reactive({
@@ -116,6 +149,11 @@ const pagination = reactive({
 })
 
 const addForm = reactive({
+  name: '',
+})
+
+const editForm = reactive({
+  id: null,
   name: '',
 })
 
@@ -189,6 +227,18 @@ function resetAddForm() {
   addDialogRef.value?.clearValidate()
 }
 
+function openEditDialog(row) {
+  editForm.id = row.id
+  editForm.name = row.name
+  editDialogVisible.value = true
+}
+
+function resetEditForm() {
+  editForm.id = null
+  editForm.name = ''
+  editDialogRef.value?.clearValidate()
+}
+
 function handleAdd() {
   if (submitLoading.value) return
 
@@ -202,6 +252,28 @@ function handleAdd() {
       showMessage('新增成功')
       dialogVisible.value = false
       pagination.current = 1
+      fetchList()
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+    .finally(() => {
+      submitLoading.value = false
+    })
+}
+
+function handleEdit() {
+  if (submitLoading.value || editForm.id == null) return
+
+  submitLoading.value = true
+  updateCategory({ id: editForm.id, name: editForm.name.trim() })
+    .then((res) => {
+      if (res.success === false) {
+        showMessage(res.message || '修改分类失败', 'error')
+        return
+      }
+      showMessage('修改成功')
+      editDialogVisible.value = false
       fetchList()
     })
     .catch((err) => {

@@ -10,6 +10,11 @@ export function addCategory(data) {
   return axios.post('/admin/category/add', data)
 }
 
+/** 修改分类 */
+export function updateCategory(data) {
+  return axios.post('/admin/category/update', data)
+}
+
 /** 删除分类 */
 export function deleteCategory(data) {
   return axios.post('/admin/category/delete', data)

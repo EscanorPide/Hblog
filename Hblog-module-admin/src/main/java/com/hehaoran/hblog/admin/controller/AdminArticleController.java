@@ -31,14 +31,14 @@ public class AdminArticleController {
     @PostMapping("/publish")
     @ApiOperation(value = "文章发布")
     @ApiOperationLog(description = "文章发布")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Response publishArticle(@RequestBody @Validated PublishArticleReqVO publishArticleReqVO) {
         return articleService.publishArticle(publishArticleReqVO);
     }
     @PostMapping("/delete")
     @ApiOperation(value = "文章删除")
     @ApiOperationLog(description = "文章删除")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Response deleteArticle(@RequestBody @Validated DeleteArticleReqVO deleteArticleReqVO) {
         return articleService.deleteArticle(deleteArticleReqVO);
     }
@@ -57,7 +57,7 @@ public class AdminArticleController {
     @PostMapping("/update")
     @ApiOperation(value = "更新文章")
     @ApiOperationLog(description = "更新文章")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public Response updateArticle(@RequestBody @Validated UpdateArticleReqVO updateArticleReqVO) {
         return articleService.updateArticle(updateArticleReqVO);
     }

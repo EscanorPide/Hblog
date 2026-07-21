@@ -167,6 +167,7 @@ public class WebArticleServiceImpl implements WebArticleService {
                     .cover(articleDO.getCover())
                     .summary(articleDO.getSummary())
                     .createTime(articleDO.getCreateTime())
+                    .readNum(articleDO.getReadNum() == null ? 0L : articleDO.getReadNum())
                     .categoryId(categoryRelDO == null ? null : categoryRelDO.getCategoryId())
                     .categoryName(categoryDO == null ? null : categoryDO.getName())
                     .tags(toTagVos(tagRelsByArticleId.get(articleDO.getId()), tagMap))

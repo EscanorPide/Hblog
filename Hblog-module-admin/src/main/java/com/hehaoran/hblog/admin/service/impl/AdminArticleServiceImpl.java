@@ -3,6 +3,9 @@ package com.hehaoran.hblog.admin.service.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Lists;
 import com.hehaoran.hblog.admin.config.ArticleDetailConvert;
+import com.hehaoran.hblog.admin.event.DeleteArticleEvent;
+import com.hehaoran.hblog.admin.event.PublishArticleEvent;
+import com.hehaoran.hblog.admin.event.UpdateArticleEvent;
 import com.hehaoran.hblog.admin.model.vo.article.*;
 import com.hehaoran.hblog.admin.service.AdminArticleService;
 import com.hehaoran.hblog.common.domain.dos.*;
@@ -13,6 +16,7 @@ import com.hehaoran.hblog.common.utils.PageResponse;
 import com.hehaoran.hblog.common.utils.Response;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -47,6 +51,8 @@ public class AdminArticleServiceImpl implements AdminArticleService {
     private ArticleTagRelMapper articleTagRelMapper;
     @Autowired
     private TagMapper tagMapper;
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     /**
      * 发布文章
@@ -96,6 +102,9 @@ public class AdminArticleServiceImpl implements AdminArticleService {
         // 4. 保存文章关联的标签集合
         List<String> publishTags = publishArticleReqVO.getTags();
         insertTags(articleId, publishTags);
+
+        // 5. 发布文章事件（事务提交后再同步 Lucene）
+        eventPublisher.publishEvent(new PublishArticleEvent(this, articleId));
 
         return Response.success();
     }
@@ -206,6 +215,9 @@ public class AdminArticleServiceImpl implements AdminArticleService {
 
         // 4. 删除文章-标签关联记录
         articleTagRelMapper.deleteByArticleId(articleId);
+
+        // 5. 发布删除文章事件（事务提交后再删除 Lucene 文档）
+        eventPublisher.publishEvent(new DeleteArticleEvent(this, articleId));
 
         return Response.success();
     }
@@ -331,6 +343,9 @@ public class AdminArticleServiceImpl implements AdminArticleService {
         articleTagRelMapper.deleteByArticleId(articleId);
         List<String> publishTags = updateArticleReqVO.getTags();
         insertTags(articleId, publishTags);
+
+        // 5. 发布更新文章事件（事务提交后再同步 Lucene）
+        eventPublisher.publishEvent(new UpdateArticleEvent(this, articleId));
 
         return Response.success();
     }

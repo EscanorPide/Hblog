@@ -44,9 +44,9 @@ const blogSettingsStore = useBlogSettingsStore()
 const { cachedNames } = useTagsView()
 const userStore = useUserStore()
 
-// 刷新页面后 Pinia 会丢失，进入后台布局时补拉用户信息 / 博客设置
+// 进入后台时补拉用户信息（确保 roles 最新，用户管理菜单依赖 admin 角色）
 onMounted(() => {
-  if (!userStore.userInfo?.username) {
+  if (!userStore.userInfo?.username || !(userStore.roles || []).length) {
     userStore.setUserInfo()
   }
   blogSettingsStore.fetchSettings()

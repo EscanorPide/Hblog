@@ -1,4 +1,4 @@
-package com.hehaoran.hblog.web.config;
+package com.hehaoran.hblog.web.Config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

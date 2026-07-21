@@ -38,3 +38,9 @@ rustfs:
   region: us-east-1
   path-style-access: true
   url-prefix: http://你的服务器IP:9000/hblog
+
+#=================================================================
+# Lucene 全文检索
+#=================================================================
+lucene:
+  indexDir: /app/weblog/lucene-index # lucene 索引存放的位置

@@ -3,6 +3,7 @@ package com.hehaoran.hblog.admin.controller;
 import com.hehaoran.hblog.admin.model.vo.category.AddCategoryReqVO;
 import com.hehaoran.hblog.admin.model.vo.category.DeleteCategoryReqVO;
 import com.hehaoran.hblog.admin.model.vo.category.FindCategoryPageListReqVO;
+import com.hehaoran.hblog.admin.model.vo.category.UpdateCategoryReqVO;
 import com.hehaoran.hblog.admin.service.AdminCategoryService;
 import com.hehaoran.hblog.common.aspect.ApiOperationLog;
 import com.hehaoran.hblog.common.utils.PageResponse;
@@ -36,6 +37,14 @@ public class AdminCategoryController {
     public Response addCategory(@RequestBody @Validated AddCategoryReqVO addCategoryReqVO) {
         return categoryService.addCategory(addCategoryReqVO);
     }
+
+    @PostMapping("/category/update")
+    @ApiOperation(value = "更新分类")
+    @ApiOperationLog(description = "更新分类")
+    public Response updateCategory(@RequestBody @Validated UpdateCategoryReqVO updateCategoryReqVO) {
+        return categoryService.updateCategory(updateCategoryReqVO);
+    }
+
     @PostMapping("/category/list")
     @ApiOperation(value = "分类分页数据获取")
     @ApiOperationLog(description = "分类分页数据获取")

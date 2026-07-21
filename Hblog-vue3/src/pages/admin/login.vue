@@ -19,24 +19,27 @@
       </el-icon>
     </button>
 
-    <!-- 登录卡片 -->
+    <!-- 登录 / 注册卡片 -->
     <div class="login-card">
-      <h1>Hello, Hblog!</h1>
-      <p class="subtitle">登录以访问你的博客工作台。</p>
+      <h1>{{ isRegister ? 'Create Account' : 'Hello, Hblog!' }}</h1>
+      <p class="subtitle">
+        {{ isRegister ? '注册账号，开始查看他的博客。' : '登录以访问他的博客。' }}
+      </p>
 
       <el-form
         ref="formRef"
         :model="form"
-        :rules="rules"
+        :rules="activeRules"
         size="large"
-        @submit.prevent="handleLogin"
+        @submit.prevent="handleSubmit"
       >
         <el-form-item prop="username">
           <el-input
             v-model="form.username"
             placeholder="请输入用户名"
             clearable
-            @keyup.enter="handleLogin"
+            autocomplete="username"
+            @keyup.enter="handleSubmit"
           >
             <template #prefix>
               <el-icon><User /></el-icon>
@@ -51,7 +54,8 @@
             placeholder="请输入密码"
             show-password
             clearable
-            @keyup.enter="handleLogin"
+            autocomplete="current-password"
+            @keyup.enter="handleSubmit"
           >
             <template #prefix>
               <el-icon><Lock /></el-icon>
@@ -59,30 +63,60 @@
           </el-input>
         </el-form-item>
 
-        <div class="form-row">
+        <el-form-item v-if="isRegister" prop="confirmPassword">
+          <el-input
+            v-model="form.confirmPassword"
+            type="password"
+            placeholder="请再次输入密码"
+            show-password
+            clearable
+            autocomplete="new-password"
+            @keyup.enter="handleSubmit"
+          >
+            <template #prefix>
+              <el-icon><Lock /></el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+
+        <div v-if="!isRegister" class="form-row">
           <el-checkbox v-model="form.remember">记住我</el-checkbox>
           <a class="forgot" href="#" @click.prevent>忘记密码？</a>
+        </div>
+        <div v-else class="form-row form-row--hint">
+          <span class="hint">密码至少 8 位</span>
         </div>
 
         <el-button
           class="login-btn"
           native-type="submit"
           :loading="loading"
-          @click="handleLogin"
+          @click="handleSubmit"
         >
-          登 录
+          {{ isRegister ? '注 册' : '登 录' }}
         </el-button>
+
+        <p class="switch-mode">
+          <template v-if="isRegister">
+            已有账号？
+            <a href="#" @click.prevent="switchMode(false)">去登录</a>
+          </template>
+          <template v-else>
+            还没有账号？
+            <a href="#" @click.prevent="switchMode(true)">立即注册</a>
+          </template>
+        </p>
       </el-form>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, nextTick, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { User, Lock, Sunny, Moon } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { login } from '@/api/admin/user'
+import { login, register } from '@/api/admin/user'
 import { setToken } from '@/composables/auth'
 import { useUserStore } from '@/stores/user'
 
@@ -90,6 +124,7 @@ const userStore = useUserStore()
 const router = useRouter()
 const formRef = ref()
 const loading = ref(false)
+const isRegister = ref(false)
 
 /* 主题：默认跟随系统，可通过按钮手动切换 */
 const isLight = ref(window.matchMedia('(prefers-color-scheme: light)').matches)
@@ -101,46 +136,106 @@ function toggleTheme() {
 const form = reactive({
   username: '',
   password: '',
+  confirmPassword: '',
   remember: false,
 })
 
-const rules = {
+const validateConfirm = (_rule, value, callback) => {
+  if (!value) {
+    callback(new Error('请再次输入密码'))
+    return
+  }
+  if (value !== form.password) {
+    callback(new Error('两次输入的密码不一致'))
+    return
+  }
+  callback()
+}
+
+const loginRules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
 }
 
-async function handleLogin() {
+const registerRules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 60, message: '用户名长度为 3-60 个字符', trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 8, max: 72, message: '密码长度为 8-72 个字符', trigger: 'blur' },
+  ],
+  confirmPassword: [{ required: true, validator: validateConfirm, trigger: 'blur' }],
+}
+
+const activeRules = computed(() => (isRegister.value ? registerRules : loginRules))
+
+function switchMode(registerMode) {
+  isRegister.value = registerMode
+  form.confirmPassword = ''
+  nextTick(() => formRef.value?.clearValidate())
+}
+
+function goAfterAuth() {
+  const redirect = router.currentRoute.value.query.redirect
+  const canEnterAdmin = userStore.hasRole('admin', 'editor')
+  if (!canEnterAdmin) {
+    router.push('/')
+    return
+  }
+  router.push(typeof redirect === 'string' ? redirect : '/admin/index')
+}
+
+function doLogin() {
+  return login(form.username.trim(), form.password).then((res) => {
+    if (res.success === false) {
+      ElMessage.error(res.message || '登录失败，请检查用户名和密码')
+      return
+    }
+    const token = res.data?.token
+    if (!token) {
+      ElMessage.error('登录成功但未返回 token')
+      return
+    }
+    setToken(token)
+    return userStore.setUserInfo().then(() => {
+      ElMessage.success('登录成功')
+      goAfterAuth()
+    })
+  })
+}
+
+async function handleSubmit() {
   if (!formRef.value || loading.value) return
   await formRef.value.validate((valid) => {
     if (!valid) return
     loading.value = true
-    login(form.username, form.password)
-      .then((res) => {
-        console.log(res)
-        // HTTP 200 不代表登录成功，还要看后端返回的业务标志
-        if (res.success === false) {
-          ElMessage.error(res.message || '登录失败，请检查用户名和密码')
-          return
-        }
-        const token = res.data.token
-        if (!token) {
-          ElMessage.error('登录成功但未返回 token')
-          return
-        }
-        setToken(token)
-        userStore.setUserInfo()
-        ElMessage.success('登录成功')
-        // 优先跳回守卫拦截前的页面，否则进后台首页
-        const redirect = router.currentRoute.value.query.redirect
-        router.push(typeof redirect === 'string' ? redirect : '/admin/index')
-      })
+
+    const task = isRegister.value
+      ? register({
+          username: form.username.trim(),
+          password: form.password,
+          confirmPassword: form.confirmPassword,
+        }).then((res) => {
+          if (res.success === false) {
+            ElMessage.error(res.message || '注册失败')
+            return
+          }
+          ElMessage.success('注册成功，正在登录…')
+          return doLogin()
+        })
+      : doLogin()
+
+    task
       .catch((err) => {
         console.error(err)
-        // 区分接口错误与前端代码错误，避免误报「登录失败」
         if (err.response) {
-          ElMessage.error(err.response.data?.message || '登录失败，请检查用户名和密码')
+          ElMessage.error(
+            err.response.data?.message || (isRegister.value ? '注册失败' : '登录失败，请检查用户名和密码'),
+          )
         } else {
-          ElMessage.error(err.message || '登录过程出错')
+          ElMessage.error(err.message || '请求出错')
         }
       })
       .finally(() => {
@@ -375,6 +470,33 @@ async function handleLogin() {
   color: #fff;
 }
 
+.form-row--hint {
+  justify-content: flex-start;
+  margin-bottom: 14px;
+}
+
+.hint {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.switch-mode {
+  margin: 16px 0 0;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.switch-mode a {
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.switch-mode a:hover {
+  color: #fff;
+}
+
 /* 白色登录按钮 */
 .login-btn {
   width: 100%;
@@ -573,6 +695,22 @@ async function handleLogin() {
 }
 
 .login-page.light .forgot:hover {
+  color: #000;
+}
+
+.login-page.light .hint {
+  color: rgba(0, 0, 0, 0.4);
+}
+
+.login-page.light .switch-mode {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.login-page.light .switch-mode a {
+  color: #16181d;
+}
+
+.login-page.light .switch-mode a:hover {
   color: #000;
 }
 

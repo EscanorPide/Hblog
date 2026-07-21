@@ -3,6 +3,7 @@ package com.hehaoran.hblog.admin.controller;
 import com.hehaoran.hblog.admin.model.vo.tag.AddTagReqVO;
 import com.hehaoran.hblog.admin.model.vo.tag.DeleteTagReqVO;
 import com.hehaoran.hblog.admin.model.vo.tag.FindTagPageListReqVO;
+import com.hehaoran.hblog.admin.model.vo.tag.UpdateTagReqVO;
 import com.hehaoran.hblog.admin.service.AdminTagService;
 import com.hehaoran.hblog.common.aspect.ApiOperationLog;
 import com.hehaoran.hblog.common.utils.PageResponse;
@@ -35,6 +36,13 @@ public class AdminTagController {
     @ApiOperationLog(description = "添加标签")
     public Response addTag(@RequestBody @Validated AddTagReqVO addTagReqVO) {
         return tagService.addTag(addTagReqVO);
+    }
+
+    @PostMapping("/tag/update")
+    @ApiOperation(value = "修改标签")
+    @ApiOperationLog(description = "修改标签")
+    public Response updateTag(@RequestBody @Validated UpdateTagReqVO updateTagReqVO) {
+        return tagService.updateTag(updateTagReqVO);
     }
 
     @PostMapping("/tag/list")

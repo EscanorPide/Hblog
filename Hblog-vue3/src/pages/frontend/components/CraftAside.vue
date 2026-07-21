@@ -1,12 +1,16 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import moment from 'moment'
+import gsap from 'gsap'
+import { SplitText } from 'gsap/SplitText'
 import { useBlogSettingsStore } from '@/stores/blogSettings'
 import { getCategoryList } from '@/api/frontend/category'
 import { getTagList } from '@/api/frontend/tag'
 import { getArticlePageList } from '@/api/frontend/article'
 import { Folder } from '@element-plus/icons-vue'
+
+gsap.registerPlugin(SplitText)
 
 const { settings } = storeToRefs(useBlogSettingsStore())
 
@@ -14,9 +18,13 @@ const categories = ref([])
 const tags = ref([])
 const hotArticles = ref([])
 const loading = ref(false)
+const titleRef = ref(null)
+const descRef = ref(null)
 
 const CATEGORY_LIMIT = 8
 const TAG_LIMIT = 12
+const HOT_LIMIT = 5
+const HOT_FETCH_SIZE = 50
 
 const blogName = computed(() => settings.value.name || 'Hblog')
 const intro = computed(
@@ -35,9 +43,79 @@ const titleParts = computed(() => {
 const visibleCategories = computed(() => categories.value.slice(0, CATEGORY_LIMIT))
 const visibleTags = computed(() => tags.value.slice(0, TAG_LIMIT))
 
+let mottoSplit = null
+let mottoAnim = null
+let titleAnim = null
+
 function formatDate(value) {
   if (!value) return ''
   return moment(value).format('MM-DD')
+}
+
+function getReadNum(item) {
+  return Number(item?.readNum ?? item?.readCount ?? item?.viewCount ?? item?.pv ?? 0) || 0
+}
+
+function formatReadNum(n) {
+  const num = Number(n) || 0
+  if (num >= 10000) return `${(num / 10000).toFixed(1)}w`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
+  return String(num)
+}
+
+/** 按浏览量降序取热门文章 */
+function pickHotArticles(list) {
+  return [...(list || [])]
+    .sort((a, b) => {
+      const diff = getReadNum(b) - getReadNum(a)
+      if (diff !== 0) return diff
+      // 浏览量相同则按时间新到旧
+      return new Date(b.createTime || 0).getTime() - new Date(a.createTime || 0).getTime()
+    })
+    .slice(0, HOT_LIMIT)
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+function clearHeadAnims() {
+  titleAnim?.kill?.()
+  titleAnim = null
+  if (titleRef.value) gsap.killTweensOf(titleRef.value)
+
+  mottoAnim?.kill?.()
+  mottoAnim = null
+  mottoSplit?.revert?.()
+  mottoSplit = null
+}
+
+async function playHeadAnimsOnce() {
+  clearHeadAnims()
+  await nextTick()
+  if (prefersReducedMotion()) return
+
+  if (titleRef.value) {
+    titleAnim = gsap.from(titleRef.value, {
+      x: 72,
+      opacity: 0,
+      duration: 1.45,
+      ease: 'power2.out',
+    })
+  }
+
+  const el = descRef.value
+  if (!el || !intro.value) return
+
+  mottoSplit = SplitText.create(el, { type: 'chars' })
+  mottoAnim = gsap.from(mottoSplit.chars, {
+    x: 28,
+    opacity: 0,
+    duration: 0.55,
+    ease: 'power4',
+    stagger: 0.025,
+    delay: 0.55,
+  })
 }
 
 onMounted(async () => {
@@ -46,7 +124,7 @@ onMounted(async () => {
     const [categoryRes, tagRes, hotRes] = await Promise.all([
       getCategoryList(),
       getTagList(),
-      getArticlePageList({ current: 1, size: 5 }),
+      getArticlePageList({ current: 1, size: HOT_FETCH_SIZE }),
     ])
     if (categoryRes?.success !== false) {
       categories.value = categoryRes.data || []
@@ -55,20 +133,26 @@ onMounted(async () => {
       tags.value = tagRes.data || []
     }
     if (hotRes?.success !== false) {
-      hotArticles.value = hotRes.data || []
+      hotArticles.value = pickHotArticles(hotRes.data || [])
     }
   } catch (err) {
     console.error('加载左侧栏失败', err)
   } finally {
     loading.value = false
   }
+
+  await playHeadAnimsOnce()
+})
+
+onBeforeUnmount(() => {
+  clearHeadAnims()
 })
 </script>
 
 <template>
   <aside class="craft-aside" v-loading="loading">
     <div class="craft-aside__head">
-      <h1 class="craft-aside__title">
+      <h1 ref="titleRef" class="craft-aside__title">
         <template v-if="titleParts.split">
           <span>{{ titleParts.left }}</span>
           <span class="craft-aside__amp">&amp;</span>
@@ -76,7 +160,7 @@ onMounted(async () => {
         </template>
         <template v-else>{{ titleParts.left }}</template>
       </h1>
-      <p class="craft-aside__desc">{{ intro }}</p>
+      <p ref="descRef" class="craft-aside__desc">{{ intro }}</p>
     </div>
 
     <div class="craft-aside__cards">
@@ -92,6 +176,9 @@ onMounted(async () => {
               <span class="aside-card__hot-main">
                 <span class="aside-card__hot-title">{{ item.title }}</span>
                 <span class="aside-card__hot-date">{{ formatDate(item.createTime) }}</span>
+              </span>
+              <span class="aside-card__hot-views" :title="`浏览 ${getReadNum(item)}`">
+                {{ formatReadNum(getReadNum(item)) }}
               </span>
             </RouterLink>
           </li>
@@ -282,6 +369,22 @@ onMounted(async () => {
   margin-top: 0.15rem;
   font-size: 0.7rem;
   color: #9a9a9a;
+}
+
+.aside-card__hot-views {
+  flex-shrink: 0;
+  min-width: 1.75rem;
+  text-align: right;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #8a8a8a;
+  line-height: 1.2;
+  padding-top: 0.1rem;
+}
+
+.aside-card__hot-link:hover .aside-card__hot-views {
+  color: #0f0f0f;
 }
 
 .aside-card__list {

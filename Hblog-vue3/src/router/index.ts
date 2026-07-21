@@ -10,7 +10,10 @@ import AdminIndex from '@/pages/admin/index.vue'
 import AdminArticles from '@/pages/admin/articles.vue'
 import AdminCategories from '@/pages/admin/categories.vue'
 import AdminTags from '@/pages/admin/tags.vue'
+import AdminComments from '@/pages/admin/comments.vue'
 import AdminSettings from '@/pages/admin/settings.vue'
+import AdminStatistics from '@/pages/admin/statistics.vue'
+import AdminUsers from '@/pages/admin/users.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 
 const routes = [
@@ -61,6 +64,9 @@ const routes = [
     path: '/admin',
     component: AdminLayout,
     redirect: '/admin/index',
+    meta: {
+      roles: ['admin', 'editor'],
+    },
     children: [
       {
         path: 'index',
@@ -69,6 +75,14 @@ const routes = [
         meta: {
           title: '后台首页',
           affix: true,
+        },
+      },
+      {
+        path: 'statistics',
+        name: 'AdminStatistics',
+        component: AdminStatistics,
+        meta: {
+          title: '数据统计',
         },
       },
       {
@@ -93,6 +107,23 @@ const routes = [
         component: AdminTags,
         meta: {
           title: '标签管理',
+        },
+      },
+      {
+        path: 'comments',
+        name: 'AdminComments',
+        component: AdminComments,
+        meta: {
+          title: '评论管理',
+        },
+      },
+      {
+        path: 'users',
+        name: 'AdminUsers',
+        component: AdminUsers,
+        meta: {
+          title: '用户管理',
+          roles: ['admin'],
         },
       },
       {

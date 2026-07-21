@@ -12,7 +12,6 @@ const year = new Date().getFullYear()
   <footer class="craft-footer">
     <div class="craft-footer__inner">
       <p>© {{ year }} {{ blogName }}</p>
-      <p v-if="settings.author" class="craft-footer__author">{{ settings.author }}</p>
     </div>
   </footer>
 </template>

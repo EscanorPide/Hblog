@@ -27,6 +27,7 @@
         <module>Hblog-module-admin</module>
         <module>Hblog-module-common</module>
         <module>Hblog-module-jwt</module>
+        <module>Hblog-module-search</module>
     </modules>
 
 
@@ -54,6 +55,8 @@
         <!-- RustFS 官方接入方式：AWS S3 SDK v2（RustFS 兼容 S3 协议） -->
         <aws.sdk.version>2.25.27</aws.sdk.version>
         <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <lucene.version>8.11.1</lucene.version>
+        <commons-io.version>2.11.0</commons-io.version>
 
 
     </properties>
@@ -75,6 +78,11 @@
             <dependency>
                 <groupId>com.hehaoran</groupId>
                 <artifactId>Hblog-module-jwt</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.hehaoran</groupId>
+                <artifactId>Hblog-module-search</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -151,6 +159,39 @@
                 <groupId>org.mapstruct</groupId>
                 <artifactId>mapstruct</artifactId>
                 <version>${mapstruct.version}</version>
+            </dependency>
+            <!-- lucene 全文检索引擎 -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-core</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+
+            <!-- 中文分词 -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-analyzers-smartcn</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+
+            <!-- 关键词高亮 -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-highlighter</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+
+            <!-- 查询解析器 -->
+            <dependency>
+                <groupId>org.apache.lucene</groupId>
+                <artifactId>lucene-queryparser</artifactId>
+                <version>${lucene.version}</version>
+            </dependency>
+            <!-- 工具包 -->
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
             </dependency>
         </dependencies>
 

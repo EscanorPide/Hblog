@@ -1,9 +1,9 @@
 <template>
-  <div class="dashboard">
+  <div class="dashboard" v-loading="loading">
     <section class="welcome-card">
       <div>
         <p class="eyebrow">WELCOME BACK</p>
-        <h1>上午好，管理员 👋</h1>
+        <h1>{{ greeting }}，管理员</h1>
         <p>今天也要继续创作优质内容，保持博客活跃。</p>
       </div>
       <div class="welcome-date">
@@ -19,7 +19,9 @@
         </div>
         <div>
           <span>{{ item.label }}</span>
-          <strong>{{ item.value }}</strong>
+          <strong>
+            <CountTo :value="item.value" :duration="1.8" />
+          </strong>
           <small>{{ item.tip }}</small>
         </div>
       </article>
@@ -49,20 +51,33 @@
       <article class="panel">
         <div class="panel-heading">
           <div>
-            <h2>最近动态</h2>
-            <p>博客最新内容变更</p>
+            <h2>数据洞察</h2>
+            <p>查看更完整的访问与发布统计</p>
           </div>
-          <button class="text-button" type="button" @click="showComingSoon('最近动态')">
-            查看全部
+          <button class="text-button" type="button" @click="router.push('/admin/statistics')">
+            进入数据统计
           </button>
         </div>
-        <ul class="activity-list">
-          <li v-for="activity in activities" :key="activity.title">
-            <span class="activity-dot" :class="activity.theme"></span>
-            <div>
-              <strong>{{ activity.title }}</strong>
-              <span>{{ activity.time }}</span>
-            </div>
+        <ul class="insight-list">
+          <li>
+            <span class="insight-label">文章总量</span>
+            <strong>
+              <CountTo :value="stats.articleTotalCount" :duration="1.8" />
+            </strong>
+          </li>
+          <li>
+            <span class="insight-label">分类 / 标签</span>
+            <strong class="insight-pair">
+              <CountTo :value="stats.categoryTotalCount" :duration="1.8" />
+              <span>/</span>
+              <CountTo :value="stats.tagTotalCount" :duration="1.8" />
+            </strong>
+          </li>
+          <li>
+            <span class="insight-label">累计浏览量</span>
+            <strong>
+              <CountTo :value="stats.pvTotalCount" :duration="2" />
+            </strong>
           </li>
         </ul>
       </article>
@@ -71,51 +86,111 @@
 </template>
 
 <script setup>
-import { ChatDotRound, CollectionTag, Document, EditPen, Plus, View } from '@element-plus/icons-vue'
-import { computed } from 'vue'
+import {
+  CollectionTag,
+  Document,
+  EditPen,
+  FolderOpened,
+  Plus,
+  Setting,
+  View,
+} from '@element-plus/icons-vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { getBaseStatisticsInfo } from '@/api/admin/dashboard'
+import CountTo from '@/components/CountTo.vue'
 import { showMessage } from '@/composables/util'
 
 defineOptions({ name: 'AdminIndex' })
 
 const router = useRouter()
+const loading = ref(false)
 const today = new Date()
+
+const stats = reactive({
+  articleTotalCount: 0,
+  categoryTotalCount: 0,
+  tagTotalCount: 0,
+  pvTotalCount: 0,
+})
+
 const currentDay = computed(() => String(today.getDate()).padStart(2, '0'))
 const currentMonth = computed(() =>
   today.toLocaleDateString('zh-CN', { month: 'short', weekday: 'short' }),
 )
 
-const statistics = [
-  { label: '文章总数', value: '128', tip: '较上月 +12', icon: Document, theme: 'purple' },
-  { label: '总浏览量', value: '36,842', tip: '较上月 +18.6%', icon: View, theme: 'blue' },
-  { label: '评论数量', value: '896', tip: '24 条待审核', icon: ChatDotRound, theme: 'orange' },
-  { label: '标签数量', value: '42', tip: '覆盖 8 个分类', icon: CollectionTag, theme: 'green' },
-]
+const greeting = computed(() => {
+  const hour = today.getHours()
+  if (hour < 6) return '夜深了'
+  if (hour < 12) return '上午好'
+  if (hour < 14) return '中午好'
+  if (hour < 18) return '下午好'
+  return '晚上好'
+})
+
+const statistics = computed(() => [
+  {
+    label: '文章总数',
+    value: stats.articleTotalCount,
+    tip: '已发布内容总量',
+    icon: Document,
+    theme: 'purple',
+  },
+  {
+    label: '总浏览量',
+    value: stats.pvTotalCount,
+    tip: '全部文章阅读累计',
+    icon: View,
+    theme: 'blue',
+  },
+  {
+    label: '分类数量',
+    value: stats.categoryTotalCount,
+    tip: '内容分类体系',
+    icon: FolderOpened,
+    theme: 'orange',
+  },
+  {
+    label: '标签数量',
+    value: stats.tagTotalCount,
+    tip: '标签覆盖情况',
+    icon: CollectionTag,
+    theme: 'green',
+  },
+])
 
 const quickActions = [
   { label: '发布文章', icon: EditPen, path: '/admin/articles' },
-  { label: '新建分类', icon: Plus },
-  { label: '管理评论', icon: ChatDotRound },
-  { label: '整理标签', icon: CollectionTag },
+  { label: '新建分类', icon: Plus, path: '/admin/categories' },
+  { label: '整理标签', icon: CollectionTag, path: '/admin/tags' },
+  { label: '系统设置', icon: Setting, path: '/admin/settings' },
 ]
 
-const activities = [
-  { title: '发布了文章《Vue 3 组件设计实践》', time: '10 分钟前', theme: 'purple' },
-  { title: '“前端开发”分类新增 2 篇文章', time: '2 小时前', theme: 'blue' },
-  { title: '审核通过了 6 条评论', time: '昨天 18:35', theme: 'green' },
-]
-
-function showComingSoon(name) {
-  showMessage(`${name}功能正在建设中`, 'info')
+async function fetchStatistics() {
+  loading.value = true
+  try {
+    const res = await getBaseStatisticsInfo()
+    if (res?.success === false) return
+    const data = res.data || {}
+    stats.articleTotalCount = Number(data.articleTotalCount || 0)
+    stats.categoryTotalCount = Number(data.categoryTotalCount || 0)
+    stats.tagTotalCount = Number(data.tagTotalCount || 0)
+    stats.pvTotalCount = Number(data.pvTotalCount || 0)
+  } catch (err) {
+    console.error('获取仪表盘统计失败', err)
+    showMessage('获取首页统计失败', 'error')
+  } finally {
+    loading.value = false
+  }
 }
 
 function handleQuickAction(action) {
   if (action.path) {
     router.push(action.path)
-    return
   }
-  showComingSoon(action.label)
 }
+
+onMounted(fetchStatistics)
 </script>
 
 <style scoped>
@@ -212,41 +287,52 @@ function handleQuickAction(action) {
 }
 
 .purple {
-  color: #7c3aed;
-  background: #f1eafe;
+  color: #fff;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
 }
 
 .blue {
-  color: #2563eb;
-  background: #e9f1ff;
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
 }
 
 .orange {
-  color: #ea580c;
-  background: #fff0e7;
+  color: #fff;
+  background: linear-gradient(135deg, #ea580c, #f59e0b);
 }
 
 .green {
-  color: #059669;
-  background: #e7f8f1;
+  color: #fff;
+  background: linear-gradient(135deg, #059669, #10b981);
 }
 
 .stat-card span {
-  color: #8b91a1;
-  font-size: 12px;
+  color: #5b6472;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .stat-card strong {
-  margin: 1px 0;
-  color: #272a36;
-  font-size: 22px;
-  line-height: 1.35;
+  display: block;
+  margin: 4px 0 2px;
+  color: #111827;
+  font-size: 34px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+.stat-card strong :deep(.count-to) {
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  line-height: inherit;
 }
 
 .stat-card small {
   overflow: hidden;
-  color: #a8adba;
-  font-size: 10px;
+  color: #6b7280;
+  font-size: 12px;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -324,50 +410,47 @@ function handleQuickAction(action) {
   transform: translateY(-2px);
 }
 
-.activity-list {
+.insight-list {
   display: flex;
   flex-direction: column;
-  gap: 17px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.activity-list li {
+.insight-list li {
   display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.activity-dot {
-  width: 9px;
-  height: 9px;
-  flex: 0 0 auto;
-  border-radius: 50%;
-}
-
-.activity-list div {
-  min-width: 0;
-  display: flex;
-  flex: 1;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #fafbfc;
+  border: 1px solid #edf0f4;
 }
 
-.activity-list strong {
-  overflow: hidden;
-  color: #565c6e;
-  font-size: 12px;
-  font-weight: 500;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.insight-label {
+  color: #8b91a1;
+  font-size: 13px;
 }
 
-.activity-list span:last-child {
-  flex: 0 0 auto;
-  color: #a3a8b5;
-  font-size: 10px;
+.insight-list strong {
+  color: #1f2430;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.insight-list strong :deep(.count-to) {
+  font-size: inherit;
+  font-weight: inherit;
+}
+
+.insight-pair {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 @media (max-width: 1180px) {
@@ -399,12 +482,6 @@ function handleQuickAction(action) {
 
   .quick-actions {
     grid-template-columns: repeat(2, 1fr);
-  }
-
-  .activity-list div {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 2px;
   }
 }
 </style>

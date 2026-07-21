@@ -122,10 +122,19 @@
             class="cover-uploader"
             :show-file-list="false"
             :http-request="handleCoverUpload"
+            :disabled="coverUploading"
             accept="image/*"
           >
-            <img v-if="form.cover" :src="form.cover" class="cover-preview" alt="文章封面" />
-            <el-icon v-else class="cover-uploader-icon"><Plus /></el-icon>
+            <div v-loading="coverUploading" class="cover-uploader__inner">
+              <img
+                v-if="coverPreview"
+                :key="coverPreview"
+                :src="coverPreview"
+                class="cover-preview"
+                alt="文章封面"
+              />
+              <el-icon v-else class="cover-uploader-icon"><Plus /></el-icon>
+            </div>
           </el-upload>
         </el-form-item>
 
@@ -203,7 +212,7 @@ import {
 } from '@/api/admin/article'
 import { getCategorySelectList } from '@/api/admin/category'
 import { getTagSelectList } from '@/api/admin/tag'
-import { uploadFile } from '@/api/admin/file'
+import { resolveUploadUrl, uploadFile } from '@/api/admin/file'
 import { showMessage, showModel } from '@/composables/util'
 
 defineOptions({ name: 'AdminArticles' })
@@ -211,12 +220,15 @@ defineOptions({ name: 'AdminArticles' })
 const loading = ref(false)
 const detailLoading = ref(false)
 const submitLoading = ref(false)
+const coverUploading = ref(false)
+const coverPreview = ref('')
 const dialogVisible = ref(false)
 const isEdit = ref(false)
 const formRef = ref()
 const tableData = ref([])
 const categoryOptions = ref([])
 const tagOptions = ref([])
+let coverObjectUrl = ''
 
 const filter = reactive({
   title: '',
@@ -319,14 +331,30 @@ function handleReset() {
   fetchList()
 }
 
+function revokeCoverObjectUrl() {
+  if (coverObjectUrl) {
+    URL.revokeObjectURL(coverObjectUrl)
+    coverObjectUrl = ''
+  }
+}
+
+function setCover(url) {
+  form.cover = url || ''
+  if (!coverObjectUrl || form.cover !== coverObjectUrl) {
+    revokeCoverObjectUrl()
+  }
+  coverPreview.value = form.cover
+}
+
 function resetForm() {
   form.id = null
   form.title = ''
   form.content = ''
-  form.cover = ''
   form.categoryId = null
   form.tags = []
   form.summary = ''
+  setCover('')
+  coverUploading.value = false
   formRef.value?.clearValidate()
 }
 
@@ -353,7 +381,7 @@ function openEditDialog(row) {
       form.id = data.id
       form.title = data.title || ''
       form.content = data.content || ''
-      form.cover = data.cover || ''
+      setCover(data.cover || '')
       form.categoryId = data.categoryId ?? null
       form.tags = (data.tagIds || []).map((id) => Number(id))
       form.summary = data.summary || ''
@@ -371,20 +399,44 @@ function handleCoverUpload(options) {
   const file = options.file
   if (!file?.type?.startsWith('image/')) {
     showMessage('请上传图片文件', 'warning')
+    options?.onError?.(new Error('invalid file type'))
     return
   }
+
+  // 先本地预览，上传成功后再替换为正式 URL
+  revokeCoverObjectUrl()
+  coverObjectUrl = URL.createObjectURL(file)
+  coverPreview.value = coverObjectUrl
+  coverUploading.value = true
 
   uploadFile(file)
     .then((res) => {
       if (res.success === false) {
+        setCover(form.cover)
         showMessage(res.message || '封面上传失败', 'error')
+        options?.onError?.(new Error(res.message || 'upload failed'))
         return
       }
-      form.cover = res.data?.url || ''
+      const url = resolveUploadUrl(res)
+      if (!url) {
+        setCover(form.cover)
+        showMessage('封面上传成功，但未返回访问地址', 'error')
+        options?.onError?.(new Error('empty upload url'))
+        return
+      }
+      setCover(url)
       formRef.value?.clearValidate('cover')
       showMessage('封面上传成功')
+      options?.onSuccess?.(res)
     })
-    .catch((err) => console.error(err))
+    .catch((err) => {
+      setCover(form.cover)
+      console.error(err)
+      options?.onError?.(err)
+    })
+    .finally(() => {
+      coverUploading.value = false
+    })
 }
 
 async function onUploadImg(files, callback) {
@@ -396,7 +448,9 @@ async function onUploadImg(files, callback) {
         showMessage(res.message || '图片上传失败', 'error')
         continue
       }
-      if (res.data?.url) urls.push(res.data.url)
+      const url = resolveUploadUrl(res)
+      if (url) urls.push(url)
+      else showMessage('图片上传成功，但未返回访问地址', 'error')
     } catch (err) {
       console.error(err)
     }
@@ -536,6 +590,14 @@ onMounted(() => {
 
 .cover-uploader :deep(.el-upload:hover) {
   border-color: #409eff;
+}
+
+.cover-uploader__inner {
+  width: 178px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .cover-uploader-icon {

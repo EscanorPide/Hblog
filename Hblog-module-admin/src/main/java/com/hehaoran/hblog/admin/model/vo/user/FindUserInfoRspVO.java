@@ -20,5 +20,6 @@ public class FindUserInfoRspVO {
      * 用户名
      */
     private String username;
+    private java.util.List<String> roles;
 
 }

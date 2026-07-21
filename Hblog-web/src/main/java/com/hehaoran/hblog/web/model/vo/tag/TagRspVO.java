@@ -10,4 +10,7 @@ public class TagRspVO {
     private Long id;
 
     private String name;
+
+    /** 该标签下文章数量 */
+    private Long articlesTotal;
 }
